@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rust-server-certs
+type: Opaque
+data:
+  server.crt: <base64>
+  server.key: <base64>
+  ca.crt: <base64>
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rust-mtls-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rust-mtls-server
+  template:
+    metadata:
+      labels:
+        app: rust-mtls-server
+    spec:
+      containers:
+      - name: rust-mtls-server
+        image: your-repo/rust-mtls-server:latest
+        ports:
+        - containerPort: 8443
+        volumeMounts:
+        - name: certs
+          mountPath: /certs
+          readOnly: true
+      volumes:
+      - name: certs
+        secret:
+          secretName: rust-server-certs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rust-mtls-service
+spec:
+  selector:
+    app: rust-mtls-server
+  ports:
+    - port: 443
+      targetPort: 8443

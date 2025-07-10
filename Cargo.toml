@@ -1,0 +1,16 @@
+[package]
+name = "rust-mtls-server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+hyper = { version = "1", features = ["full"] }
+hyper-util = { version = "0.1", features = ["full"] }
+tokio = { version = "1", features = ["full"] }
+tokio-rustls = "0.25"
+rustls = "0.22"
+rustls-pki-types = "1.0"
+tower = { version = "0.4", features = ["make"] }
+tokio-stream = { version = "0.1", features = ["net"] }
+rustls-pemfile = "2.0"
+http-body-util = "0.1"
