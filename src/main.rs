@@ -6,6 +6,9 @@ use hyper_util::rt::{TokioExecutor, TokioIo};
 use hyper_util::server::conn::auto::Builder;
 use rand::Rng;
 use std::convert::Infallible;
+use std::sync::{LazyLock, Mutex};
+
+static IS_FIRST_PAYLOAD: LazyLock<Mutex<bool>> = LazyLock::new(|| Mutex::new(true));
 
 fn get_current_timestamp() -> String {
     chrono::Utc::now()
@@ -21,7 +24,8 @@ async fn handle(req: Request<hyper::body::Incoming>) -> Result<Response<Full<Byt
     let current_time = get_current_timestamp();
 
     // Send a malformed packet every once in a while to validate schema
-    let payload = if temp_value < 30 {
+    let payload = if temp_value > 30 || *IS_FIRST_PAYLOAD.lock().unwrap() {
+        *IS_FIRST_PAYLOAD.lock().unwrap() = false;
         format!(
             "{{\"temperature\":{{\"Value\":{temp_value},\"SourceTimestamp\":\"{current_time}\"}}}}"
         )
@@ -35,6 +39,7 @@ async fn handle(req: Request<hyper::body::Incoming>) -> Result<Response<Full<Byt
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     println!("Starting HTTP server...");
+    let _ = IS_FIRST_PAYLOAD;
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8080").await?;
 
