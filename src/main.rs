@@ -19,9 +19,16 @@ async fn handle(req: Request<hyper::body::Incoming>) -> Result<Response<Full<Byt
     let mut rand_handle = rand::rng();
     let temp_value = rand_handle.random_range(20..100);
     let current_time = get_current_timestamp();
-    let payload = format!(
-        "{{\"temperature\":{{\"Value\":{temp_value},\"SourceTimestamp\":\"{current_time}\"}}}}"
-    );
+
+    // Send a malformed packet every once in a while to validate schema
+    let payload = if temp_value < 30 {
+        format!(
+            "{{\"temperature\":{{\"Value\":{temp_value},\"SourceTimestamp\":\"{current_time}\"}}}}"
+        )
+    } else {
+        format!("{{\"humidity\":{{\"Value\":{temp_value},\"SourceTimestamp\":\"{current_time}\"}}")
+    };
+
     Ok(Response::new(Full::new(Bytes::from(payload))))
 }
 
