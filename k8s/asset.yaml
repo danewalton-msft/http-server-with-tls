@@ -1,0 +1,27 @@
+apiVersion: namespaces.deviceregistry.microsoft.com/v1
+kind: Asset
+metadata:
+  name: rest-http-asset
+  namespace: azure-iot-operations
+spec:
+  # attributes: # This part of the spec is currently broken in the operator. Re-enable later
+  #   assetId: my-rest-thermostat-asset
+  #   assetType: thermostat
+  datasets:
+    - name: weather-sensor-dataset
+      dataSource: /
+      datasetConfiguration: |-
+        {
+          "samplingIntervalInMilliseconds": 5000
+        }
+      destinations:
+        - configuration:
+            topic: weather/sensor
+          target: Mqtt
+        # - configuration:
+          # key: weather
+          # target: BrokerStateStore
+  deviceRef:
+    deviceName: rust-http-server
+    endpointName: rust-http-server
+  version: 1
